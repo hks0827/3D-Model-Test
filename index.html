@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 챗봇 2D</title>
+    
+    <!-- CSS 파일들 -->
+    <link rel="stylesheet" href="src/css/main.css">
+    <link rel="stylesheet" href="src/css/character.css">
+    <link rel="stylesheet" href="src/css/responsive.css">
+    
+    <!-- 폰트 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>AI 챗봇</h1>
+            <div class="status-indicator">
+                <span id="connectionStatus">연결 중...</span>
+            </div>
+        </header>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <section class="character-section">
+            <!-- 2D 캐릭터 (숨김 상태) -->
+            <div class="character-container" id="character2dContainer" style="display: none;">
+                <div id="character" class="character idle">
+                    <div class="character-face">
+                        <div class="eyes">
+                            <div class="eye left-eye"></div>
+                            <div class="eye right-eye"></div>
+                        </div>
+                        <div class="mouth" id="characterMouth"></div>
+                    </div>
+                    <div class="character-body"></div>
+                </div>
+            </div>
+
+            <!-- 3D 캐릭터 (기본 표시) -->
+            <div class="character-container-3d" id="character3dContainer">
+                <!-- Three.js 캔버스가 여기에 추가됨 -->
+                <div class="character-controls">
+                    <button id="toggle2D3D" class="toggle-button">2D로 전환</button>
+                </div>
+            </div>
+            
+            <div class="character-name">
+                <span id="characterModeText">비즈니스 AI (3D)</span>
+            </div>
+        </section>
+            <!-- 채팅 섹션 -->
+            <section class="chat-section">
+                <div class="chat-container">
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                안녕하세요! 저는 AI 챗봇입니다. 무엇을 도와드릴까요?
+                            </div>
+                            <div class="message-time">방금 전</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="input-wrapper">
+                            <input type="text" id="textInput" placeholder="메시지를 입력하거나 마이크를 사용하세요...">
+                            <button id="sendButton" class="send-button">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="voice-controls">
+                            <button id="micButton" class="mic-button">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="m12 1 0 22"></path>
+                                    <path d="m17 5h0a5 5 0 0 1 0 10h0"></path>
+                                    <path d="m9 9a3 3 0 1 0 6 0a3 3 0 0 0-6 0"></path>
+                                </svg>
+                                <span>음성 입력</span>
+                            </button>
+                            
+                            <button id="speakButton" class="speak-button">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="11,5 6,9 2,9 2,15 6,15 11,19 11,5"></polygon>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                </svg>
+                                <span>음성 출력</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 설정 패널 -->
+        <div id="settingsPanel" class="settings-panel hidden">
+            <div class="settings-content">
+                <h3>설정</h3>
+                <div class="setting-item">
+                    <label for="voiceSelect">음성 선택:</label>
+                    <select id="voiceSelect"></select>
+                </div>
+                <div class="setting-item">
+                    <label for="speedRange">말하기 속도:</label>
+                    <input type="range" id="speedRange" min="0.5" max="2" step="0.1" value="1">
+                    <span id="speedValue">1.0</span>
+                </div>
+                <div class="setting-item">
+                    <label for="pitchRange">음성 높이:</label>
+                    <input type="range" id="pitchRange" min="0.5" max="2" step="0.1" value="1">
+                    <span id="pitchValue">1.0</span>
+                </div>
+                <button id="closeSettings" class="close-button">닫기</button>
+            </div>
+        </div>
+
+        <!-- 설정 버튼 -->
+        <button id="settingsButton" class="settings-button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v6m0 10v6m11-7h-6m-10 0H1m15.5-6.5l-4.24 4.24m-8.49-8.49L7.05 7.05m12.73 12.73l-4.24-4.24M7.05 16.95l-4.24 4.24"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- 로딩 스피너 -->
+    <div id="loadingSpinner" class="loading-spinner hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Three.js 기본 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- GLTFLoader - 여러 URL 시도 -->
+<script>
+console.log('GLTFLoader 로드 시도 중...');
+
+// 작동하는 GLTFLoader URLs
+const gltfLoaderUrls = [
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js',
+    'https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js',
+    'https://threejs.org/examples/js/loaders/GLTFLoader.js'
+];
+
+let currentUrlIndex = 0;
+
+function loadGLTFLoader() {
+    if (currentUrlIndex >= gltfLoaderUrls.length) {
+        console.error('❌ 모든 GLTFLoader URL 실패');
+        // GLTFLoader 없이 계속 진행
+        loadOtherScripts();
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.src = gltfLoaderUrls[currentUrlIndex];
+    
+    script.onload = function() {
+        if (typeof THREE.GLTFLoader !== 'undefined') {
+            console.log('✅ GLTFLoader 로드 성공:', gltfLoaderUrls[currentUrlIndex]);
+            loadOtherScripts();
+        } else {
+            console.log('⚠️ GLTFLoader 스크립트 로드됐지만 클래스 없음');
+            currentUrlIndex++;
+            loadGLTFLoader();
+        }
+    };
+    
+    script.onerror = function() {
+        console.log('❌ GLTFLoader 로드 실패:', gltfLoaderUrls[currentUrlIndex]);
+        currentUrlIndex++;
+        loadGLTFLoader();
+    };
+    
+    document.head.appendChild(script);
+}
+
+// GLTFLoader 로드 시작
+loadGLTFLoader();
+
+function loadOtherScripts() {
+    console.log('GLTFLoader 확인:', typeof THREE.GLTFLoader !== 'undefined' ? '✅ 로드됨' : '❌ 없음');
+    
+    // 나머지 스크립트들 로드
+    const scripts = [
+        'config/constants.js',
+        'config/api.js',
+        'src/js/utils/dom.js',
+        'src/js/utils/animation.js',
+        'src/js/speech/audioUtils.js',
+        'src/js/speech/stt.js',
+        'src/js/speech/tts.js',
+        'src/js/character.js',
+        'src/js/ai/responses.js',
+        'src/js/ai/chatbot.js'
+    ];
+    
+    // 기본 스크립트들 로드 (동기적으로)
+    loadScriptsSequentially(scripts).then(() => {
+        console.log('✅ 기본 스크립트 로드 완료');
+        // 3D 스크립트들 로드
+        load3DScripts();
+    });
+}
+
+function loadScriptsSequentially(scripts) {
+    return scripts.reduce((promise, script) => {
+        return promise.then(() => loadSingleScript(script));
+    }, Promise.resolve());
+}
+
+function load3DScripts() {
+    console.log('3D 스크립트 로드 시작...');
+    
+    // 3D 스크립트들을 순서대로 로드 (중복 방지)
+    loadSingleScript('src/js/3d/scene.js')
+        .then(() => {
+            console.log('✅ scene.js 로드됨');
+            // Character3D는 건너뛰고 BusinessCharacter만 로드
+            return loadSingleScript('src/js/3d/businessCharacter.js');
+        })
+        .then(() => {
+            console.log('✅ businessCharacter.js 로드됨');
+            return loadSingleScript('src/js/main.js');
+        })
+        .then(() => {
+            console.log('✅ 모든 스크립트 로드 완료');
+        })
+        .catch(error => {
+            console.error('❌ 스크립트 로드 중 오류:', error);
+            // 에러가 발생해도 main.js는 로드
+            loadSingleScript('src/js/main.js');
+        });
+}
+
+function loadSingleScript(src) {
+    return new Promise((resolve, reject) => {
+        // 이미 로드된 스크립트 확인
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) {
+            console.log(`⚠️ ${src} 이미 로드됨, 건너뜀`);
+            resolve();
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = false;
+        
+        script.onload = () => {
+            console.log(`✅ ${src} 로드 성공`);
+            resolve();
+        };
+        
+        script.onerror = () => {
+            console.error(`❌ ${src} 로드 실패`);
+            reject(new Error(`Failed to load ${src}`));
+        };
+        
+        document.head.appendChild(script);
+    });
+}
+</script>
+</body>
+</html>

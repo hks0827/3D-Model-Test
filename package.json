@@ -1,0 +1,33 @@
+{
+  "name": "ai-chatbot-2d",
+  "version": "1.0.0",
+  "description": "2D AI 챗봇 with STT/TTS 기능",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server . -p 3000 -o --cors",
+    "dev": "npx live-server --port=3000 --open=/ --cors",
+    "serve": "npx http-server . -p 3000 --cors -c-1",
+    "build": "echo 'Build process here'",
+    "test": "echo 'Tests here'"
+  },
+  "keywords": [
+    "ai",
+    "chatbot",
+    "2d",
+    "speech",
+    "web-speech-api",
+    "tts",
+    "stt"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ai-chatbot-2d.git"
+  }
+}
