@@ -18,12 +18,12 @@ class ThreeScene {
 
         // 카메라 설정
         this.camera = new THREE.PerspectiveCamera(
-            75,
+            45,
             this.container.clientWidth / this.container.clientHeight,
-            0.1,
-            1000
+            1,
+            10
         );
-        this.camera.position.set(0, 1.6, 3);
+        this.camera.position.set(0, 1.5, 2);
 
         // 렌더러 설정
         this.renderer = new THREE.WebGLRenderer({ 
@@ -67,33 +67,56 @@ class ThreeScene {
     }
 
     createCharacter() {
-        try {
-            console.log('캐릭터 생성 시작...');
-            
-            // 우선순위: BusinessCharacter > RealCharacter3D > Character3D
-            if (typeof BusinessCharacter !== 'undefined') {
-                console.log('✅ BusinessCharacter 사용 - 전문 비즈니스 아바타');
-                this.character = new BusinessCharacter(this.scene);
-                
-            } else if (typeof RealCharacter3D !== 'undefined') {
-                console.log('✅ RealCharacter3D 사용 - 실제 3D 모델');
-                this.character = new RealCharacter3D(this.scene);
-                
-            } else if (typeof Character3D !== 'undefined') {
-                console.log('✅ Character3D 사용 - 기본 3D 캐릭터');
-                this.character = new Character3D(this.scene);
-                
-            } else {
-                throw new Error('사용 가능한 캐릭터 클래스가 없습니다');
-            }
-            
-            console.log('✅ 캐릭터 생성 완료');
-            
-        } catch (error) {
-            console.error('캐릭터 생성 실패:', error);
-            this.createSimpleCharacter();
-        }
-    }
+      try {
+          console.log('캐릭터 생성 시작...');
+          
+          // 우선순위: BusinessCharacter > Character3D
+          if (typeof BusinessCharacter !== 'undefined') {
+              console.log('✅ BusinessCharacter 사용 - 전문 비즈니스 아바타');
+              this.character = new BusinessCharacter(this.scene);
+              
+          } else if (typeof Character3D !== 'undefined') {
+              console.log('✅ Character3D 사용 - 기본 3D 캐릭터');
+              this.character = new Character3D(this.scene);
+              
+          } else {
+              throw new Error('사용 가능한 캐릭터 클래스가 없습니다');
+          }
+          
+          console.log('✅ 캐릭터 생성 완료');
+          
+      } catch (error) {
+          console.error('캐릭터 생성 실패:', error);
+          this.createSimpleCharacter();
+      }
+  }
+
+  // 간단한 폴백 캐릭터 추가
+  createSimpleCharacter() {
+      console.log('간단한 폴백 캐릭터 생성...');
+      
+      // 간단한 큐브 캐릭터
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+      const cube = new THREE.Mesh(geometry, material);
+      cube.position.y = 0.5;
+      
+      this.scene.add(cube);
+      
+      // 기본 캐릭터 인터페이스 구현
+      this.character = {
+          setState: (state) => {
+              console.log('큐브 캐릭터 상태:', state);
+          },
+          update: () => {
+              cube.rotation.x += 0.01;
+              cube.rotation.y += 0.01;
+          },
+          destroy: () => {
+              this.scene.remove(cube);
+          }
+      };
+  }
 
     animate() {
         this.animationId = requestAnimationFrame(() => this.animate());

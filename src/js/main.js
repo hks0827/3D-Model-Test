@@ -64,7 +64,10 @@ class ChatbotApp {
     // DOM 요소 초기화
     initDOMElements() {
         this.elements = {
+            // 기존 요소들
             character: document.getElementById('character'),
+            character3dContainer: document.getElementById('character3dContainer'),
+            character2dContainer: document.getElementById('character2dContainer'),
             chatMessages: document.getElementById('chatMessages'),
             textInput: document.getElementById('textInput'),
             sendButton: document.getElementById('sendButton'),
@@ -75,6 +78,12 @@ class ChatbotApp {
             closeSettings: document.getElementById('closeSettings'),
             connectionStatus: document.getElementById('connectionStatus'),
             loadingSpinner: document.getElementById('loadingSpinner'),
+            
+            // 새로운 UI 요소들
+            characterModeText: document.getElementById('characterModeText'),
+            toggle2D3D: document.getElementById('toggle2D3D'),
+            
+            // 설정 요소들
             voiceSelect: document.getElementById('voiceSelect'),
             speedRange: document.getElementById('speedRange'),
             speedValue: document.getElementById('speedValue'),
@@ -83,11 +92,17 @@ class ChatbotApp {
         };
 
         // 필수 요소 확인
-        const requiredElements = ['character', 'chatMessages', 'textInput', 'sendButton'];
+        const requiredElements = ['chatMessages', 'textInput', 'sendButton'];
         for (const elementName of requiredElements) {
             if (!this.elements[elementName]) {
                 throw new Error(`필수 DOM 요소를 찾을 수 없습니다: ${elementName}`);
             }
+        }
+        
+        // 3D 컨테이너 확인
+        if (!this.elements.character3dContainer) {
+            console.warn('3D 캐릭터 컨테이너를 찾을 수 없습니다. 2D 모드로 실행됩니다.');
+            this.is3DMode = false;
         }
     }
 
@@ -325,41 +340,51 @@ class ChatbotApp {
 
     // STT 콜백 설정
     setupSTTCallbacks() {
-        this.stt.setCallbacks({
-            onStart: () => {
-                this.setCharacterState(APP_CONFIG.CHARACTER_STATES.LISTENING);
-                this.elements.micButton.classList.add('active');
-                this.updateMicButtonText('듣는 중...');
-            },
-            onResult: (result) => {
-                // 3D 캐릭터의 립싱크 업데이트
-                if (this.is3DMode && this.character3D && this.stt.analyzer) {
-                    const audioData = this.stt.getFrequencyData();
-                    this.character3D.updateLipSync(audioData);
-                }
-                
-                if (result.interim) {
-                    this.showInterimResult(result.interim);
-                }
-                if (result.final && result.final.trim()) {
-                    this.handleUserInput(result.final.trim());
-                }
-            },
-            onEnd: () => {
-                this.setCharacterState(APP_CONFIG.CHARACTER_STATES.IDLE);
-                this.elements.micButton.classList.remove('active');
-                this.updateMicButtonText('음성 입력');
-                this.clearInterimResult();
-            },
-            onError: (error) => {
-                this.setCharacterState(APP_CONFIG.CHARACTER_STATES.IDLE);
-                this.elements.micButton.classList.remove('active');
-                this.updateMicButtonText('음성 입력');
-                this.showError(error);
-                this.clearInterimResult();
+    this.stt.setCallbacks({
+        onStart: () => {
+            this.setCharacterState(APP_CONFIG.CHARACTER_STATES.LISTENING);
+            this.elements.micButton.classList.add('active');
+            this.updateMicButtonText('듣는 중...');
+        },
+        onResult: (result) => {
+            // 🎤 실시간 오디오 데이터를 캐릭터에 전달
+            if (this.is3DMode && this.character3D && this.stt.analyzer) {
+                const audioData = this.stt.getFrequencyData();
+                this.character3D.currentAudioData = audioData; // 💡 여기서 데이터 설정
             }
-        });
-    }
+            
+            if (result.interim) {
+                this.showInterimResult(result.interim);
+            }
+            if (result.final && result.final.trim()) {
+                this.handleUserInput(result.final.trim());
+            }
+        },
+        onEnd: () => {
+            this.setCharacterState(APP_CONFIG.CHARACTER_STATES.IDLE);
+            this.elements.micButton.classList.remove('active');
+            this.updateMicButtonText('음성 입력');
+            this.clearInterimResult();
+            
+            // 🎤 오디오 데이터 초기화
+            if (this.is3DMode && this.character3D) {
+                this.character3D.currentAudioData = null;
+            }
+        },
+        onError: (error) => {
+            this.setCharacterState(APP_CONFIG.CHARACTER_STATES.IDLE);
+            this.elements.micButton.classList.remove('active');
+            this.updateMicButtonText('음성 입력');
+            this.showError(error);
+            this.clearInterimResult();
+            
+            // 🎤 오디오 데이터 초기화
+            if (this.is3DMode && this.character3D) {
+                this.character3D.currentAudioData = null;
+            }
+        }
+    });
+}
 
     // TTS 콜백 설정
     setupTTSCallbacks() {
@@ -392,24 +417,31 @@ class ChatbotApp {
 
     // TTS용 립싱크 시작
     startTTSLipSync() {
-        if (!this.character3D) return;
+    if (!this.character3D) return;
+    
+    // 🔊 TTS 중 가짜 오디오 데이터 생성
+    this.ttsLipSyncInterval = setInterval(() => {
+        const fakeAudioData = Array.from({length: 32}, () => 
+            Math.random() * 128 + 64
+        );
         
-        // TTS 중 립싱크 시뮬레이션
-        this.ttsLipSyncInterval = setInterval(() => {
-            const fakeAudioData = Array.from({length: 32}, () => 
-                Math.random() * 128 + 64
-            );
-            this.character3D.updateLipSync(fakeAudioData);
-        }, 100);
-    }
+        // TTS 중에는 가짜 데이터 설정
+        this.character3D.currentAudioData = fakeAudioData;
+    }, 100);
+}
 
     // TTS용 립싱크 중지
     stopTTSLipSync() {
-        if (this.ttsLipSyncInterval) {
-            clearInterval(this.ttsLipSyncInterval);
-            this.ttsLipSyncInterval = null;
-        }
+    if (this.ttsLipSyncInterval) {
+        clearInterval(this.ttsLipSyncInterval);
+        this.ttsLipSyncInterval = null;
     }
+    
+    // 🔊 TTS 중지 시 오디오 데이터 초기화
+    if (this.character3D) {
+        this.character3D.currentAudioData = null;
+    }
+}
 
     // 이벤트 리스너 설정
     setupEventListeners() {
@@ -540,11 +572,11 @@ class ChatbotApp {
                 await new Promise(resolve => setTimeout(resolve, 1000)); // 일반적인 사고 시간
             }
             
-            this.showLoading(true);
+            //this.showLoading(true);
             
             const botResponse = await this.generateBotResponse(userMessage);
             
-            this.showLoading(false);
+            //this.showLoading(false);
             
             this.addMessage(botResponse, APP_CONFIG.MESSAGE_TYPES.BOT);
             
@@ -620,16 +652,28 @@ class ChatbotApp {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
 
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        contentDiv.textContent = text;
+        // 아바타 생성
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'message-avatar';
+        avatarDiv.textContent = type === 'bot-message' ? '🤖' : '👤';
+
+        // 메시지 버블 생성
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'message-bubble';
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'message-text';
+        textDiv.textContent = text;
 
         const timeDiv = document.createElement('div');
         timeDiv.className = 'message-time';
         timeDiv.textContent = timestamp || this.formatTime(new Date());
 
-        messageDiv.appendChild(contentDiv);
-        messageDiv.appendChild(timeDiv);
+        bubbleDiv.appendChild(textDiv);
+        bubbleDiv.appendChild(timeDiv);
+
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(bubbleDiv);
         
         this.elements.chatMessages.appendChild(messageDiv);
         this.elements.chatMessages.scrollTop = this.elements.chatMessages.scrollHeight;
@@ -641,7 +685,6 @@ class ChatbotApp {
             timestamp: timestamp || new Date().toISOString()
         });
     }
-
     // 중간 결과 표시 (STT)
     showInterimResult(text) {
         let interimDiv = document.getElementById('interimResult');
@@ -750,9 +793,7 @@ class ChatbotApp {
 
     // 로딩 표시/숨기기
     showLoading(show) {
-        if (this.elements.loadingSpinner) {
-            this.elements.loadingSpinner.classList.toggle('hidden', !show);
-        }
+      console.log(`로딩 상태: ${show ? '시작' : '완료'} (UI 표시 안함)`);
     }
 
     // 연결 상태 업데이트
@@ -912,3 +953,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// DOM 로드 완료 후 애플리케이션 시작 - 강화된 버전
+function initializeApp() {
+    console.log('🚀 ChatbotApp 초기화 시작...');
+    console.log('DOM 상태:', document.readyState);
+    
+    try {
+        window.chatbotApp = new ChatbotApp();
+        console.log('✅ ChatbotApp 생성 완료');
+    } catch (error) {
+        console.error('❌ ChatbotApp 초기화 실패:', error);
+        console.error('에러 스택:', error.stack);
+    }
+}
+
+// 여러 방법으로 초기화 시도
+if (document.readyState === 'loading') {
+    console.log('📝 DOM 로딩 중... DOMContentLoaded 대기');
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    console.log('📝 DOM 이미 로드됨, 즉시 초기화');
+    initializeApp();
+}
+
+// 추가 안전망
+window.addEventListener('load', () => {
+    if (!window.chatbotApp) {
+        console.log('⚠️ window.load에서 재시도');
+        initializeApp();
+    }
+});
+
+// 페이지 언로드 시 정리
+window.addEventListener('beforeunload', () => {
+    if (window.chatbotApp) {
+        window.chatbotApp.destroy();
+    }
+});
+
+// 수동 초기화 함수 (디버깅용)
+window.manualInit = initializeApp;
+

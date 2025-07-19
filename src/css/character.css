@@ -1,353 +1,121 @@
-/* 캐릭터 섹션 */
-.character-section {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    padding: 40px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    text-align: center;
-    height: 600px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
+/* 2D 캐릭터 컨테이너 (숨김 상태) */
 .character-container {
-    position: relative;
-    width: 250px;
-    height: 350px;
-    margin: 0 auto;
-}
-
-/* 캐릭터 기본 스타일 */
-.character {
-    width: 200px;
-    height: 200px;
-    margin: 0 auto;
-    position: relative;
-    border-radius: 50%;
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-/* 캐릭터 상태별 스타일 */
-.character.idle {
-    animation: breathe 3s ease-in-out infinite;
-}
-
-.character.talking {
-    animation: talking 0.5s ease-in-out infinite;
-    background: linear-gradient(45deg, #667eea, #764ba2);
-}
-
-.character.listening {
-    animation: listening 2s ease-in-out infinite;
-    background: linear-gradient(45deg, #4ecdc4, #44a08d);
-    box-shadow: 0 0 30px rgba(78, 205, 196, 0.6);
-}
-
-.character.thinking {
-    animation: thinking 1.5s ease-in-out infinite;
-    background: linear-gradient(45deg, #feca57, #ff9ff3);
-}
-
-/* 캐릭터 애니메이션 */
-@keyframes breathe {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-@keyframes talking {
-    0%, 100% { transform: scale(1) rotate(0deg); }
-    25% { transform: scale(1.08) rotate(-1deg); }
-    75% { transform: scale(1.08) rotate(1deg); }
-}
-
-@keyframes listening {
-    0%, 100% { 
-        transform: scale(1);
-        box-shadow: 0 0 30px rgba(78, 205, 196, 0.6);
-    }
-    50% { 
-        transform: scale(1.1);
-        box-shadow: 0 0 50px rgba(78, 205, 196, 0.8);
-    }
-}
-
-@keyframes thinking {
-    0%, 100% { transform: scale(1) rotate(0deg); }
-    33% { transform: scale(1.05) rotate(-2deg); }
-    66% { transform: scale(1.05) rotate(2deg); }
-}
-
-/* 캐릭터 얼굴 */
-.character-face {
-    position: relative;
-    width: 80%;
-    height: 80%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-/* 눈 */
-.eyes {
-    display: flex;
-    justify-content: space-between;
-    width: 60px;
-    margin-bottom: 20px;
-}
-
-.eye {
-    width: 16px;
-    height: 16px;
-    background: #333;
-    border-radius: 50%;
-    position: relative;
-    animation: blink 4s infinite;
-}
-
-.eye::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 4px;
-    height: 4px;
-    background: white;
-    border-radius: 50%;
-}
-
-@keyframes blink {
-    0%, 90%, 100% { height: 16px; }
-    95% { height: 2px; }
-}
-
-/* 입 */
-.mouth {
-    width: 30px;
-    height: 15px;
-    border: 3px solid #333;
-    border-top: none;
-    border-radius: 0 0 30px 30px;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-/* 입 모양 변형 */
-.mouth.smile {
-    width: 35px;
-    height: 18px;
-    border-radius: 0 0 35px 35px;
-    transform: rotate(0deg);
-}
-
-.mouth.open {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    border: 3px solid #333;
-    background: #333;
-    animation: mouthTalk 0.3s ease infinite;
-}
-
-.mouth.surprised {
-    width: 20px;
-    height: 30px;
-    border-radius: 50%;
-    border: 3px solid #333;
-}
-
-@keyframes mouthTalk {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-}
-
-/* 캐릭터 몸체 */
-.character-body {
-    position: absolute;
-    bottom: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 60px;
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-    border-radius: 50px 50px 20px 20px;
-    opacity: 0.8;
-    z-index: -1;
-}
-
-.character.talking .character-body {
-    animation: bodyMove 0.5s ease-in-out infinite;
-}
-
-@keyframes bodyMove {
-    0%, 100% { transform: translateX(-50%) rotate(0deg); }
-    50% { transform: translateX(-50%) rotate(2deg); }
-}
-
-/* 캐릭터 이름 */
-.character-name {
-    margin-top: 30px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #333;
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* 음성 시각화 */
-.voice-visualization {
-    position: absolute;
-    bottom: -50px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 30px;
-    display: flex;
-    align-items: end;
-    justify-content: center;
-    gap: 2px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.voice-visualization.active {
-    opacity: 1;
-}
-
-.voice-bar {
-    width: 4px;
-    min-height: 4px;
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    border-radius: 2px;
-    animation: voiceBar 0.5s ease-in-out infinite alternate;
-}
-
-.voice-bar:nth-child(1) { animation-delay: 0s; }
-.voice-bar:nth-child(2) { animation-delay: 0.1s; }
-.voice-bar:nth-child(3) { animation-delay: 0.2s; }
-.voice-bar:nth-child(4) { animation-delay: 0.3s; }
-.voice-bar:nth-child(5) { animation-delay: 0.4s; }
-
-@keyframes voiceBar {
-    0% { height: 4px; }
-    100% { height: 25px; }
-}
-
-/* 감정 표현 */
-.character.happy {
-    background: linear-gradient(45deg, #feca57, #ff9ff3);
-}
-
-.character.happy .mouth {
-    border-radius: 0 0 40px 40px;
-    width: 40px;
-    height: 20px;
-}
-
-.character.sad {
-    background: linear-gradient(45deg, #74b9ff, #0984e3);
-}
-
-.character.sad .mouth {
-    border-radius: 40px 40px 0 0;
-    border-top: 3px solid #333;
-    border-bottom: none;
-    transform: rotate(180deg);
-}
-
-.character.excited {
-    background: linear-gradient(45deg, #fd79a8, #e84393);
-    animation: excited 0.3s ease-in-out infinite;
-}
-
-@keyframes excited {
-    0%, 100% { transform: scale(1) rotate(0deg); }
-    25% { transform: scale(1.1) rotate(-3deg); }
-    75% { transform: scale(1.1) rotate(3deg); }
-}
-
-/* 파티클 효과 */
-.particle {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
-    pointer-events: none;
-    animation: particle 2s ease-out forwards;
-}
-
-.character-container-3d {
-    width: 100%;
-    height: 400px;
-    position: relative;
-    border-radius: 15px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.character-container-3d canvas {
-    width: 100% !important;
-    height: 100% !important;
-    border-radius: 15px;
-}
-
-.character-controls {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
-}
-
-.toggle-button {
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.toggle-button:hover {
-    background: rgba(255, 255, 255, 1);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* 3D 로딩 애니메이션 */
-.character-container-3d.loading::before {
-    content: '3D 캐릭터 로딩 중...';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 5;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 20px;
-    border-radius: 10px;
-    font-weight: 500;
+    width: 250px;
+    height: 350px;
+    z-index: 50;
 }
 
-@keyframes particle {
+/* 3D 캐릭터 전용 스타일 */
+.character-container-3d {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.character-container-3d canvas {
+    background: transparent !important;
+    border-radius: 0 !important;
+}
+
+/* 로딩 상태 */
+.character-container-3d.loading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 10;
+}
+
+.character-container-3d.loading::after {
+    content: '3D AI 로딩 중...';
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 1rem;
+    z-index: 10;
+    margin-top: 40px;
+}
+
+/* 파티클 효과 개선 */
+.particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: floatUp 3s ease-out forwards;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes floatUp {
     0% {
         opacity: 1;
-        transform: scale(0) translateY(0);
+        transform: translateY(0) scale(0);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translateY(-100px) scale(1);
     }
     100% {
         opacity: 0;
-        transform: scale(1) translateY(-100px);
+        transform: translateY(-200px) scale(0.5);
+    }
+}
+
+/* 음성 시각화 (3D 모드용) */
+.voice-visualization-3d {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 100;
+}
+
+.voice-visualization-3d.active {
+    opacity: 1;
+}
+
+.voice-visualization-3d .voice-bar {
+    width: 6px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 3px;
+    animation: voiceWave 0.6s ease-in-out infinite alternate;
+}
+
+.voice-visualization-3d .voice-bar:nth-child(1) { animation-delay: 0s; }
+.voice-visualization-3d .voice-bar:nth-child(2) { animation-delay: 0.1s; }
+.voice-visualization-3d .voice-bar:nth-child(3) { animation-delay: 0.2s; }
+.voice-visualization-3d .voice-bar:nth-child(4) { animation-delay: 0.3s; }
+.voice-visualization-3d .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes voiceWave {
+    0% { 
+        height: 8px; 
+        background: rgba(255, 255, 255, 0.6);
+    }
+    100% { 
+        height: 40px; 
+        background: rgba(255, 255, 255, 1);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
     }
 }
