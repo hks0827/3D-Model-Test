@@ -116,6 +116,8 @@ class BusinessCharacter {
         
         // 시도할 모델 경로들 (가벼운 것부터)
         const modelPaths = [
+            './src/assets/models/office_worker_2_animated.glb',
+            './src/assets/models/office_worker_1_animated.glb',
             './src/assets/models/business-character.glb'
         ];
 

@@ -23,7 +23,7 @@ class ThreeScene {
             1,
             10
         );
-        this.camera.position.set(0, 1.5, 2);
+        this.camera.position.set(0, 0.5, 2);
 
         // 렌더러 설정
         this.renderer = new THREE.WebGLRenderer({ 
